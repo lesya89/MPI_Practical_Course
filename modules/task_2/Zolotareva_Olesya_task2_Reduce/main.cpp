@@ -6,6 +6,8 @@
 #include <cstdlib>
 #include <cmath>
 
+using namespace std;
+
 void MY_MPI_MINLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root, MPI_Comm comm) {
 	MPI_Status st;
 	int ProcNum;
