@@ -7,7 +7,7 @@
 #include <cmath>
 
 using namespace std;
-
+namespace Reduce_test{
 void MY_MPI_MINLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root, MPI_Comm comm) {
 	MPI_Status st;
 	int ProcNum;
@@ -474,7 +474,7 @@ int MY_MPI_Reduce_Tree(void *sendbuf, void *recvbuf, int count, MPI_Datatype typ
 	}
 	return 0;
 }
-
+}
 int main(int argc, char* argv[]) {
 	int n = atoi(argv[1]);
 	int *mas = new int[n];
@@ -497,7 +497,7 @@ int main(int argc, char* argv[]) {
 	{
 		Time_my1 = MPI_Wtime();
 	}
-	MY_MPI_Reduce(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	Reduce_test::MY_MPI_Reduce(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (ProcRank == 0)
 	{
 
@@ -505,7 +505,7 @@ int main(int argc, char* argv[]) {
 		Time_tree1 = MPI_Wtime();
 	}
 		
-	MY_MPI_Reduce_Tree(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	Reduce_test::MY_MPI_Reduce_Tree(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (ProcRank == 0)
 	{
 		Time_tree2 = MPI_Wtime();
