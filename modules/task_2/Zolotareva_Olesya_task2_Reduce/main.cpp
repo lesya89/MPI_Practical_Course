@@ -1,6 +1,8 @@
 #include "mpi.h" 
 #include <iostream>
 #include <time.h>
+#include <assert.h>
+#include <cstdlib>
 #include <math.h>
 
 void MY_MPI_MINLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root, MPI_Comm comm) {
@@ -377,7 +379,7 @@ void recursion(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_O
 		curentMass[i] = -1;
 	}
 	h++;
-	int t = 0;
+	//int t = 0;
 	for (int i = 0, t = 0; i < size; i++) {
 		if (massProcRankSend[i] == rank) {
 			if (!(size % 2)) {
@@ -480,10 +482,10 @@ int main(int argc, char* argv[]) {
 		
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &ProcRank);
-	srand(1);
+	std::srand(static_cast<int>(time(NULL)));
 
 	for (int i = 0; i < n; i++) {
-		mas[i] = 10 + rand() % 1000 + ProcRank;
+		mas[i] = 10 + std::rand() % 1000 + ProcRank;
 		//std::cout << " rank = " << rank << " mass[" << i << "] "<<mas[i];
 	}
 	//std::cout << std::endl;
