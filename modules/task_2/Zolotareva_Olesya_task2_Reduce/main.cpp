@@ -1,9 +1,10 @@
-#include "mpi.h" 
+// copyright : (C) by lesya89
+#include <mpi.h> 
 #include <iostream>
-#include <time.h>
+#include <ctime>
 #include <assert.h>
 #include <cstdlib>
-#include <math.h>
+#include <cmath>
 
 void MY_MPI_MINLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root, MPI_Comm comm) {
 	MPI_Status st;
