@@ -304,7 +304,7 @@ int MY_MPI_Reduce(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MP
 		{
 			//std::cout << "I am in root " << ProcNum << std::endl;
 		//	MPI_Status st;
-			int j = 0;
+			//int j = 0;
 			if (type == MPI_INT) {
 				if (op == MPI_SUM) {
 					MY_MPI_SUMM(sendbuf, recvbuf, count, type, op, root, comm);
