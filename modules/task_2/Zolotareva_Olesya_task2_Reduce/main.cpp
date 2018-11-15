@@ -7,7 +7,7 @@
 #include <cmath>
 
 using namespace std;
-using namespace Reduce_test{
+
 void MY_MPI_MINLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_Op op, int root, MPI_Comm comm) {
 	MPI_Status st;
 	int ProcNum;
@@ -19,13 +19,13 @@ void MY_MPI_MINLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, M
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				if (((int *)recvbuf)[i] < ((int *)sendbuf)[i])
 					((int *)recvbuf)[i] = ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 	}
@@ -41,13 +41,13 @@ void MY_MPI_MAXLOC(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, M
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				if (((int *)recvbuf)[i] < ((int *)sendbuf)[i])
 					((int *)recvbuf)[i] = ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 	}
@@ -63,12 +63,12 @@ void MY_MPI_LXOR(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] != ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -85,12 +85,12 @@ void MY_MPI_BXOR(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] ^ ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -107,12 +107,12 @@ void MY_MPI_BOR(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] | ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -129,12 +129,12 @@ void MY_MPI_LOR(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] || ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -151,12 +151,12 @@ void MY_MPI_BAND(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] & ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -173,12 +173,12 @@ void MY_MPI_LAND(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] && ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -195,12 +195,12 @@ void MY_MPI_PROD(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				((int *)recvbuf)[i] = ((int *)recvbuf)[i] * ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 
@@ -217,13 +217,13 @@ void MY_MPI_MIN(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				if (((int *)recvbuf)[i] > ((int *)sendbuf)[i])
 					((int *)recvbuf)[i] = ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 	}
@@ -239,13 +239,13 @@ void MY_MPI_MAX(void *sendbuf, void *recvbuf, int count, MPI_Datatype type, MPI_
 		{
 			if (j == root) {
 				((int *)recvbuf)[i] = ((int *)sendbuf)[i];
-				std::cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
+				cout << "result in root " << ((int *)recvbuf)[i] << std::endl;
 			}
 			else {
 				if (((int *)recvbuf)[i] < ((int *)sendbuf)[i])
 					((int *)recvbuf)[i] = ((int *)sendbuf)[i];
 				//int tmp = ((int *)recvbuf)[i];
-				std::cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
+				cout << "result " << j << " " << ((int *)recvbuf)[i] << "  last " << ((int *)sendbuf)[i] << std::endl;
 			}
 		}
 	}
@@ -474,7 +474,7 @@ int MY_MPI_Reduce_Tree(void *sendbuf, void *recvbuf, int count, MPI_Datatype typ
 	}
 	return 0;
 }
-}
+
 int main(int argc, char* argv[]) {
 	int n = atoi(argv[1]);
 	int *mas = new int[n];
@@ -485,19 +485,18 @@ int main(int argc, char* argv[]) {
 		
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &ProcRank);
-	std::srand(static_cast<int>(time(NULL)));
+	srand(static_cast<int>(time(NULL)));
 
 	for (int i = 0; i < n; i++) {
 		mas[i] = 10 + std::rand() % 1000 + ProcRank;
-		//std::cout << " rank = " << rank << " mass[" << i << "] "<<mas[i];
-	}
-	//std::cout << std::endl;
+		}
+	
 
 	if (ProcRank == 0)
 	{
 		Time_my1 = MPI_Wtime();
 	}
-	Reduce_test::MY_MPI_Reduce(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MY_MPI_Reduce(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (ProcRank == 0)
 	{
 
@@ -505,7 +504,7 @@ int main(int argc, char* argv[]) {
 		Time_tree1 = MPI_Wtime();
 	}
 		
-	Reduce_test::MY_MPI_Reduce_Tree(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+	MY_MPI_Reduce_Tree(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (ProcRank == 0)
 	{
 		Time_tree2 = MPI_Wtime();
@@ -513,16 +512,16 @@ int main(int argc, char* argv[]) {
 		for (int i = 0; i < n; i++) {
 			//std::cout << mas_r[i] << " ";
 		}
-		std::cout << std::endl;
+		cout << std::endl;
 		Time_MPI1 = MPI_Wtime();
 	}
 
 	MPI_Reduce(mas, mas_r, n, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (ProcRank == 0) {
 		Time_MPI2 = MPI_Wtime();
-		std::cout << "reduce realisation MPI: t =  " << Time_MPI2 - Time_MPI1 << std::endl;
-		std::cout << "reduce realisation my tree: t =  " << Time_tree2 - Time_tree1 << std::endl;
-		std::cout << "reduce realisation my: t =  " << Time_my2 - Time_my1 << std::endl;
+		cout << "reduce realisation MPI: t =  " << Time_MPI2 - Time_MPI1 << std::endl;
+		cout << "reduce realisation my tree: t =  " << Time_tree2 - Time_tree1 << std::endl;
+		cout << "reduce realisation my: t =  " << Time_my2 - Time_my1 << std::endl;
 	}
 	MPI_Finalize();
 	return 0;
