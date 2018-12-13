@@ -24,7 +24,7 @@ double* arr;
         srand(static_cast<int>(time(NULL)));
 for (int i = 0; i < size_arr; i++)
     arr[i] = staric_cast<double>(rand_r()%100 +
-                       (double)(rand_r()) / RAND_MAX + 0.00000001);
+                       static_cast<double>((rand_r()) / RAND_MAX + 0.00000001));
 return arr;
 }
 
@@ -265,16 +265,17 @@ while (index_buffer_curr_proc < size_curr_proc_buffer)
 // Сортировка параллельная
 void Sort_pp(double* recv_buffer, int* send_num_work) {
      for (int i = 0; i < num_of_procs; i++)
-          if (i % 2 == 1){  // Если выполняется, то это нечетная операция
+          if (i % 2 == 1) {  // Если выполняется, то это нечетная операция
                if (curr_rank_proc % 2 == 1) {
                      if (curr_rank_proc < num_of_procs - 1) {
                      // Сравнение - обмен с соседом справа
                Compare_split_right(recv_buffer, send_num_work[curr_rank_proc],
                       curr_rank_proc + 1, send_num_work[curr_rank_proc + 1]); }
                         } else {
-          if (curr_rank_proc > 0)  // Тогда сравнение - обмен с соседом слева
+          if (curr_rank_proc > 0) { // Тогда сравнение - обмен с соседом слева
                Compare_split_left(recv_buffer, send_num_work[curr_rank_proc],
                         curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);
+                     }
                     }
                   } else {
                     if (curr_rank_proc % 2 == 0) {
@@ -282,9 +283,9 @@ void Sort_pp(double* recv_buffer, int* send_num_work) {
                     // Сравнение - обмен с соседом справа
               Compare_split_right(recv_buffer, send_num_work[curr_rank_proc],
                        curr_rank_proc + 1, send_num_work[curr_rank_proc + 1]);
-                    } else  // Тогда сравнение - обмен с соседом слева
+                    } else {  // Тогда сравнение - обмен с соседом слева
               Compare_split_left(recv_buffer, send_num_work[curr_rank_proc],
-                    curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);} }
+                  curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);} } }
 
 int main(int argc, char* argv[]) {
     double* test_arr_seq_radix;
@@ -386,7 +387,7 @@ cout << "Parallel radix is worked: " << time_pp_work_alg_radix  << endl;
 
         cout << endl;
 
-cout <<"effect= "<< (time_seq_work_alg_radix/time_pp_work_alg_radix)<<endl;
+cout << "effect= " << (time_seq_work_alg_radix/time_pp_work_alg_radix) << endl;
         // Сравнение полученных результатов:
 
 int good = true;
