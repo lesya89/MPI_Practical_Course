@@ -1,6 +1,7 @@
 //  Copyright: (c) lesya89
 #include <mpi.h>
 #include <assert.h>
+#include <string.h>
 #include <ctime>
 #include <iostream>
 #include <cstdlib>
@@ -26,8 +27,8 @@ double* arr;
     arr = new double[size_arr];
         srand(static_cast<int>(time(NULL)));
 for (int i = 0; i < size_arr; i++)
-    arr[i] = rand_r()%100 +
-                       static_cast<double>((rand_r()) / RAND_MAX + 0.00000001);
+    arr[i] = std::rand()%100 +
+                  static_cast<double>(std::rand()%10 / RAND_MAX + 0.00000001);
 return arr;
 }
 
@@ -39,7 +40,7 @@ if (arr == NULL || size_arr < 1) {
                std::cout.precision(9);
 for (int i = 0; i < size_arr; i++)
         std::cout << arr[i] << " ";
-    std::cout << endl;
+    std::cout << std::endl;
 }
 
 // Сравнить и обменять
@@ -58,7 +59,6 @@ void Calculate_work_and_displs(int* displs, int* send_num_work, int size_arr) {
             displs[i] = (size_work + 1) * i;
             send_num_work[i] = size_work + 1;
 }
-
         for (int i = remainder; i < num_of_procs; i++) {
             displs[i] = size_work * i + remainder;
             send_num_work[i] = size_work;
@@ -318,7 +318,7 @@ for(int i = 0; i < size_arr; i++)
      test_arr_pp_radix[i] = test_arr_seq_radix[i];
 
 if (test_arr_seq_radix == NULL) {
-            cout << "Incorrect input data, try again";
+            std::cout << "Incorrect input data, try again";
             return 0;
   }
 
@@ -388,7 +388,7 @@ if (curr_rank_proc == ROOT) {
 std::cout << "Sequence is worked: " << time_seq_work_alg_radix << std::endl;
 std::cout << "Parallel is worked: " << time_pp_work_alg_radix  << std::endl;
 
-        cout << endl;
+        std::cout << std::endl;
 
 std::cout << "effect= " <<
                  (time_seq_work_alg_radix/time_pp_work_alg_radix) << std::endl;
