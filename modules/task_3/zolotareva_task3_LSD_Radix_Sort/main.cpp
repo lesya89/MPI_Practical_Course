@@ -1,7 +1,10 @@
 //  Copyright: (c) lesya89
 #include <mpi.h>
-﻿#include <iostream>
+#include <assert.h>
 #include <ctime>
+#include <iostream>
+#include <cstdlib>
+#include <cmath>
 
 #define ROOT 0  // Процесс с рангом 0 == корневой процесс
 #define MAX_SHOW_SIZE 500
@@ -23,20 +26,20 @@ double* arr;
     arr = new double[size_arr];
         srand(static_cast<int>(time(NULL)));
 for (int i = 0; i < size_arr; i++)
-    arr[i] = staric_cast<double>(rand_r()%100 +
-                       static_cast<double>((rand_r()) / RAND_MAX + 0.00000001));
+    arr[i] = rand_r()%100 +
+                       static_cast<double>((rand_r()) / RAND_MAX + 0.00000001);
 return arr;
 }
 
 // Отобразить массив
 void Show_arr(double* arr, int size_arr) {
 if (arr == NULL || size_arr < 1) {
-  return 0;
+  return ;
 }
-               cout.precision(9);
+               std::cout.precision(9);
 for (int i = 0; i < size_arr; i++)
-        cout << arr[i] << " ";
-    cout << endl;
+        std::cout << arr[i] << " ";
+    std::cout << endl;
 }
 
 // Сравнить и обменять
@@ -272,7 +275,7 @@ void Sort_pp(double* recv_buffer, int* send_num_work) {
                Compare_split_right(recv_buffer, send_num_work[curr_rank_proc],
                       curr_rank_proc + 1, send_num_work[curr_rank_proc + 1]); }
                         } else {
-          if (curr_rank_proc > 0) { // Тогда сравнение - обмен с соседом слева
+          if (curr_rank_proc > 0) {  // Тогда сравнение - обмен с соседом слева
                Compare_split_left(recv_buffer, send_num_work[curr_rank_proc],
                         curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);
                      }
@@ -329,7 +332,7 @@ if (size_arr < MAX_SHOW_SIZE)
     time_seq_work_alg_radix = seq_alg_time_end_radix - seq_alg_time_start_radix;
 
        if (size_arr < MAX_SHOW_SIZE) {
-         cout << "Array sorted by sequence radix :" << endl;
+         std::cout << "Array sorted by sequence radix :" << std::endl;
          Show_arr(test_arr_seq_radix, size_arr);
 }
 }
@@ -377,17 +380,18 @@ if (curr_rank_proc == ROOT) {
 
 if (curr_rank_proc == ROOT) {
      if (size_arr < MAX_SHOW_SIZE) {
-      cout << "Array sorted by parallel radix :" << endl;
+      std::cout << "Array sorted by parallel radix :" << std::endl;
       Show_arr(test_arr_pp_radix, size_arr);
-      cout << endl;
+      std::cout << std::endl;
 }
 
-cout << "Sequence radix version is worked: " << time_seq_work_alg_radix<< endl;
-cout << "Parallel radix is worked: " << time_pp_work_alg_radix  << endl;
+std::cout << "Sequence is worked: " << time_seq_work_alg_radix << std::endl;
+std::cout << "Parallel is worked: " << time_pp_work_alg_radix  << std::endl;
 
         cout << endl;
 
-cout << "effect= " << (time_seq_work_alg_radix/time_pp_work_alg_radix) << endl;
+std::cout << "effect= " <<
+                 (time_seq_work_alg_radix/time_pp_work_alg_radix) << std::endl;
         // Сравнение полученных результатов:
 
 int good = true;
@@ -400,7 +404,7 @@ if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
                 break;
             }
             if (good)
-cout  << std::endl;
+std::cout  << std::endl;
             delete[] test_arr_seq_radix;
 }
 
