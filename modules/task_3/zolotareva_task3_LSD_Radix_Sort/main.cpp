@@ -349,7 +349,10 @@ MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
 
     if (curr_rank_proc > 0)
       test_arr_pp_radix = new double[size_arr];
-
+    else {
+      std::cout<<"error";
+           break;
+          }
 Calculate_work_and_displs(displs, send_num_work, size_arr);
 
        recv_buffer = new double[send_num_work[curr_rank_proc]];
@@ -388,20 +391,18 @@ std::cout << "Parallel is worked: " << time_pp_work_alg_radix  << std::endl;
 std::cout << "effect= " <<
                  (time_seq_work_alg_radix/time_pp_work_alg_radix) << std::endl;
         // Сравнение полученных результатов:
-/*
+
 int good = true;
 for (int i = 0; i < size_arr; i++)
 if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
 // Сравниваем результаты двух алгоритмов
-
 // cout << "Results parallel and sequence algorithm are not identical " << endl;
                 good = false;
                 break;
             }
-            if (good)
-std::cout  << std::endl;
 
-*/
+
+
 }
 MPI_Finalize();
 
