@@ -286,12 +286,12 @@ void Sort_pp(double* recv_buffer, int* send_num_work) {
                   curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);} } }
 
 int main(int argc, char* argv[]) {
-    double* test_arr_seq_radix;
-    double* test_arr_pp_radix;
+    double* test_arr_seq_radix=nullptr;
+    double* test_arr_pp_radix=nullptr;
 
-     int* displs;  // Массив смещений относительно начала буфера test_arr
-     int* send_num_work;  // Массив количества работ для каждого процесса
-     double* recv_buffer;
+     int* displs=nullptr;  // Массив смещений относительно начала буфера test_arr
+     int* send_num_work=nullptr;  // Массив количества работ для каждого процесса
+     double* recv_buffer=nullptr;
 
     int size_arr = atoi(argv[1]);
 
@@ -314,13 +314,13 @@ if (curr_rank_proc == ROOT) {
        test_arr_seq_radix = Create_and_init_arr(size_arr);
        test_arr_pp_radix = new double[size_arr];
 
-for(int i = 0; i < size_arr; i++)
-     test_arr_pp_radix[i] = test_arr_seq_radix[i];
-
 if (test_arr_seq_radix == NULL) {
             std::cout << "Incorrect input data, try again";
             return 0;
   }
+
+  for(int i = 0; i < size_arr; i++)
+       test_arr_pp_radix[i] = test_arr_seq_radix[i];
 
 if (size_arr < MAX_SHOW_SIZE)
     Show_arr(test_arr_seq_radix, size_arr);
@@ -338,11 +338,9 @@ if (size_arr < MAX_SHOW_SIZE)
 }
 
     // Параллельная версия работы алгоритма
-
-if (curr_rank_proc == ROOT) {
-//  MPI_Barrier(MPI_COMM_WORLD);
+test_arr_pp_radix = new double[size_arr];
+MPI_Barrier(MPI_COMM_WORLD);
       pp_alg_time_start_radix = MPI_Wtime();
-}
 
      send_num_work = new int[num_of_procs];
      displs = new int[num_of_procs];
@@ -351,9 +349,6 @@ if (curr_rank_proc == ROOT) {
                  быстрой сортировки локальных буферов */
 
 MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
-
-    if (curr_rank_proc != ROOT)
-      test_arr_pp_radix = new double[size_arr];
 
 Calculate_work_and_displs(displs, send_num_work, size_arr);
 
