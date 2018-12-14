@@ -34,8 +34,6 @@ return arr;
 
 // Отобразить массив
 void Show_arr(double* arr, int size_arr) {
-if (arr == NULL || size_arr < 1) {}
-               std::cout.precision(9);
 for (int i = 0; i < size_arr; i++)
         std::cout << arr[i] << " ";
     std::cout << std::endl;
@@ -403,9 +401,9 @@ if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
             }
             if (good)
 std::cout  << std::endl;
-            delete[] test_arr_seq_radix;
-}
 
+}
+delete[] test_arr_seq_radix;
 delete[] test_arr_pp_radix;
 
 MPI_Finalize();
