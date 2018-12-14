@@ -388,7 +388,7 @@ std::cout << "Parallel is worked: " << time_pp_work_alg_radix  << std::endl;
 std::cout << "effect= " <<
                  (time_seq_work_alg_radix/time_pp_work_alg_radix) << std::endl;
         // Сравнение полученных результатов:
-
+/*
 int good = true;
 for (int i = 0; i < size_arr; i++)
 if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
@@ -401,6 +401,7 @@ if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
             if (good)
 std::cout  << std::endl;
 }
+*/
 
 MPI_Finalize();
 
