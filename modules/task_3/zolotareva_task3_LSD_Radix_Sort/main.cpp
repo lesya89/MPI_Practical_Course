@@ -286,12 +286,14 @@ void Sort_pp(double* recv_buffer, int* send_num_work) {
                   curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);} } }
 
 int main(int argc, char* argv[]) {
-    double* test_arr_seq_radix=nullptr;
-    double* test_arr_pp_radix=nullptr;
+    double* test_arr_seq_radix = nullptr;
+    double* test_arr_pp_radix = nullptr;
 
-     int* displs=nullptr;  // Массив смещений относительно начала буфера test_arr
-     int* send_num_work=nullptr;  // Массив количества работ для каждого процесса
-     double* recv_buffer=nullptr;
+     int* displs = nullptr;
+      // Массив смещений относительно начала буфера test_arr
+     int* send_num_work = nullptr;
+      // Массив количества работ для каждого процесса
+     double* recv_buffer = nullptr;
 
     int size_arr = atoi(argv[1]);
 
@@ -319,7 +321,7 @@ if (test_arr_seq_radix == NULL) {
             return 0;
   }
 
-  for(int i = 0; i < size_arr; i++)
+  for (int i = 0; i < size_arr; i++)
        test_arr_pp_radix[i] = test_arr_seq_radix[i];
 
 if (size_arr < MAX_SHOW_SIZE)
@@ -390,6 +392,12 @@ std::cout << "effect= " <<
 }
 
 // MPI_Barrier(MPI_COMM_WORLD);
+if (test_arr_pp_radix != nullptr) delete[]test_arr_pp_radix;
+if (test_arr_seq_radix != nullptr) delete[]test_arr_seq_radix;
+if (recv_buffer != nullptr) delete[]recv_buffer;
+if (send_num_work != nullptr) delete[]send_num_work;
+if (displs != nullptr) delete[]displs;
+
 MPI_Finalize();
 
 return 0;
