@@ -31,7 +31,6 @@ for (int i = 0; i < size_arr; i++)
                   static_cast<double>(std::rand()%10 / RAND_MAX + 0.00000001);
 return arr;
 }
-
 // Отобразить массив
 void Show_arr(double* arr, int size_arr) {
 for (int i = 0; i < size_arr; i++)
