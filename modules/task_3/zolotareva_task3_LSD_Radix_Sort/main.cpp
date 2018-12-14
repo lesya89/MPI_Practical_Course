@@ -295,6 +295,11 @@ int main(int argc, char* argv[]) {
 
     int size_arr = atoi(argv[1]);
 
+    if (size_arr <= 0) {
+        std::cout << "Error";
+        return -1;
+      }
+
     double seq_alg_time_start_radix = 0;
     double seq_alg_time_end_radix = 0;
     double pp_alg_time_start_radix = 0;
@@ -347,7 +352,7 @@ if (curr_rank_proc == ROOT) {
 
 MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
 
-    if (curr_rank_proc != ROOT) 
+    if (curr_rank_proc != ROOT)
       test_arr_pp_radix = new double[size_arr];
 
 Calculate_work_and_displs(displs, send_num_work, size_arr);
@@ -389,7 +394,7 @@ std::cout << "effect= " <<
         // Сравнение полученных результатов:
 }
 
-MPI_Barrier(MPI_COMM_WORLD);
+// MPI_Barrier(MPI_COMM_WORLD);
 MPI_Finalize();
 
 return 0;
