@@ -1,4 +1,4 @@
-
+//  Copyright: (c) lesya89
 #ifndef MODULES_TASK_3_ZOLOTAREVA_TASK3_LSD_RADIX_SORT_INCLUDE_RADIX_SORT_H_
 #define MODULES_TASK_3_ZOLOTAREVA_TASK3_LSD_RADIX_SORT_INCLUDE_RADIX_SORT_H_
 
@@ -138,7 +138,8 @@ struct RadixTransform<int64_t, Radixable64> {
 template <>
 struct RadixTransform<float, Radixable32> {
   Radixable32 TransformFrom(float value) {
-    Radixable32 rdxble = *reinterpret_cast<Radixable32 *>(&value);
+    union _ { float value; Radixable32 cg;};
+    Radixable32 rdxble = ((union _ *)&value)->cg;
     // Two's complement negative numbers, but keep them negative.
     if ((rdxble >> 31) == 1) {
       rdxble *= -1;
@@ -156,14 +157,17 @@ struct RadixTransform<float, Radixable32> {
       rdxble ^= (1 << 31);
       rdxble *= -1;
     }
-    return *reinterpret_cast<float *>(&rdxble);
+    union __ { float fg; Radixable32 rdxble;};
+    float rdxdbl = ((union __ *)&rdxble)->fg;
+    return rdxdbl;
   }
 };
 
 template <>
 struct RadixTransform<double, Radixable64> {
   Radixable64 TransformFrom(double value) {
-    Radixable64 rdxble = *reinterpret_cast<Radixable64 *>(&value);
+    union _ {double value; Radixable64 cg;};
+    Radixable64 rdxble = ((union _ *)&value)->cg;
     // Two's complement negative numbers, but keep them negative.
     if ((rdxble >> 63) == 1) {
       rdxble *= -1;
@@ -181,14 +185,15 @@ struct RadixTransform<double, Radixable64> {
       rdxble ^= (((Radixable64)1) << 63);
       rdxble *= -1;
     }
-    return *reinterpret_cast<double *>(&rdxble);
+    union __ { double fg; Radixable64 rdxble;};
+    double rdxdbl = ((union __ *)&rdxble)->fg;
+    return rdxdbl;
   }
 };
 
 
 template <typename RadixableType>
 void RadixSortMSD(RadixableType* data, size_t N, size_t bit) {
-
   if (N <= 1 || std::is_sorted(data, data + N)) {
     return;
   }
@@ -225,7 +230,6 @@ void RadixSortMSD(RadixableType* data, size_t N, size_t bit) {
 
 template <size_t Base, typename RadixableType>
 void RadixSortLSD(RadixableType* data, size_t N, size_t) {
-
   std::vector<RadixableType[Base]> buckets(N);
   size_t pointers[Base];
 
