@@ -118,8 +118,8 @@ int main(int argc, char **argv) {
         }
 
         if (vector_size <= 20) {
-            printf("Vector before sort: \n");
-            print_vector(data, data_size);
+            printf("Vector before: \n");
+            print_vector(data, vector_size);
         }
 
         start_time = MPI_Wtime();
@@ -170,12 +170,10 @@ int main(int argc, char **argv) {
         stop_time = MPI_Wtime();
         par_time = (stop_time - start_time);
         printf("\nParallel is:\n");
-        printf("\nSort completed!\n\tVector size: %d\n\tNumber of processors:"
-               " %d\n\tTime: %f secs\n\n", vector_size, proc_number,
-               par_time);
+        printf("\n""Time: %f secs\n",                par_time);
 
         if (vector_size <= 20) {
-            printf("Vector after sort: \n");
+            printf("Vector after: \n");
             print_vector(chunk, vector_size);
         }
 
@@ -185,12 +183,12 @@ int main(int argc, char **argv) {
         seq_time = (stop_time - start_time);
 
         printf("\nSequential is :\n");
-        printf("\nSort completed!\n\tVector size: %d\n\t"
-               "Time: %f secs\n\n", vector_size,
+        printf("\n"
+               "Time: %f secs\n\n",
                seq_time);
 
         if (vector_size <= 20) {
-            printf("Vector after sort: \n");
+            printf("Vector after: \n");
             print_vector(datacp, vector_size);
         }
 
