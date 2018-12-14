@@ -350,7 +350,7 @@ MPI_Barrier(MPI_COMM_WORLD);
     /* Параллельная сортировка с использованием
                  быстрой сортировки локальных буферов */
 
-MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
+//MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
 
 Calculate_work_and_displs(displs, send_num_work, size_arr);
 
