@@ -400,9 +400,9 @@ if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
             }
             if (good)
 std::cout  << std::endl;
-}
-*/
 
+*/
+}
 MPI_Finalize();
 
 return 0;
