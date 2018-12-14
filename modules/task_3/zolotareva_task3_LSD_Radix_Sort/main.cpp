@@ -347,7 +347,7 @@ if (curr_rank_proc == ROOT) {
 
 MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
 
-    if (curr_rank_proc != ROOT) {
+    if (curr_rank_proc != ROOT) 
       test_arr_pp_radix = new double[size_arr];
 
 Calculate_work_and_displs(displs, send_num_work, size_arr);
@@ -388,11 +388,6 @@ std::cout << "effect= " <<
                  (time_seq_work_alg_radix/time_pp_work_alg_radix) << std::endl;
         // Сравнение полученных результатов:
 }
-} else {
-  std::cout << "error";
-  std::cout << std::endl;
-       // break;
-      }
 
 MPI_Barrier(MPI_COMM_WORLD);
 MPI_Finalize();
