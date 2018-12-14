@@ -1,415 +1,210 @@
 //  Copyright: (c) lesya89
+#include <stdio.h>
+#include <stdlib.h>
 #include <mpi.h>
-#include <assert.h>
-#include <string.h>
+#include <time.h>
+#include <limits.h>
+#include <memory.h>
+#include <float.h>
+#include <cstdlib>
+#include <cstddef>
 #include <ctime>
 #include <iostream>
-#include <cstdlib>
-#include <cmath>
+#include <string>
 
-#define ROOT 0  // Процесс с рангом 0 == корневой процесс
-#define MAX_SHOW_SIZE 500
+#include "include/radix_sort.h"
 
-int  curr_rank_proc;  // Текущий ранг процесса
-int  num_of_procs;  // Число процессов
+#define N 1000000
+#define DEBUG 0
+#define MASTER_PROCESS 0
 
-double  time_seq_work_alg_radix = 0;
-             // Время последовательной версии
-double  time_pp_work_alg_radix = 0;
-             // параллельной версии поразрядной сортировки
+double start_time, stop_time;
 
+template <typename ValueType>
+void print_vector(ValueType *v, int vector_size) {
+    int i;
 
-// Создать и проинициализировать массив
-double* Create_and_init_arr(int size_arr) {
-if (size_arr < 1)
-    return NULL;
-double* arr;
-    arr = new double[size_arr];
-        srand(static_cast<int>(time(NULL)));
-for (int i = 0; i < size_arr; i++)
-    arr[i] = std::rand()%100 +
-                  static_cast<double>(std::rand()%10 / RAND_MAX + 0.00000001);
-return arr;
-}
-// Отобразить массив
-void Show_arr(double* arr, int size_arr) {
-for (int i = 0; i < size_arr; i++)
-        std::cout << arr[i] << " ";
-    std::cout << std::endl;
+    for (i = 0; i < vector_size; i++)
+        printf(" %f\n ", v[i]);
 }
 
-// Сравнить и обменять
-void Swap(int& arr_el_1, int& arr_el_2) {
-    int tmp = arr_el_1;
-    arr_el_1 = arr_el_2;
-    arr_el_2 = tmp;
+template <typename ValueType>
+ValueType *merge(ValueType *v1, int n1, ValueType *v2, int n2) {
+double  *res;
+    int i = 0,
+        j = 0,
+        index = 0;
+
+    res = new  ValueType[n1 + n2];
+
+    while (i < n1 && j < n2) {
+        if (v1[i] < v2[j])
+            res[index++] = v1[i++];
+        else
+            res[index++] = v2[j++];
+    }
+
+    while (i < n1)
+        res[index++] = v1[i++];
+
+    while (j < n2)
+        res[index++] = v2[j++];
+return res;
 }
 
+int main(int argc, char **argv) {
+    int m, vector_size = N;
+    double *data   = nullptr,
+        *datacp = nullptr;
+    double seq_time = 0,
+           par_time = 0;
+    int id, proc_number;
+    MPI_Status status;
+    int chunk_size;
+    double *chunk;
+    double *other;
+    int step;
+    int i;
 
-// Заполнить массив
-void Calculate_work_and_displs(int* displs, int* send_num_work, int size_arr) {
-  int size_work = size_arr / num_of_procs,
-  remainder = size_arr % num_of_procs;
-        for (int i = 0; i < remainder; i++) {
-            displs[i] = (size_work + 1) * i;
-            send_num_work[i] = size_work + 1;
-}
-        for (int i = remainder; i < num_of_procs; i++) {
-            displs[i] = size_work * i + remainder;
-            send_num_work[i] = size_work;
+    if (argc > 1) {
+        vector_size = atoi(argv[1]);
+    }
+
+    MPI_Init(&argc, &argv);
+    MPI_Comm_rank(MPI_COMM_WORLD, &id);
+    MPI_Comm_size(MPI_COMM_WORLD, &proc_number);
+
+    if (id == MASTER_PROCESS) {
+        int extra_elements;
+        int data_size;
+
+        std::srand(unsigned(std::time(NULL)));
+
+        extra_elements = vector_size % proc_number;
+        chunk_size = vector_size / proc_number;
+        data_size = vector_size + ((extra_elements == 0) ? 0 :
+                    proc_number - extra_elements);
+
+        /* allocate memory for vector
+         * increase the size of the array so that
+         * it is divided without a balance by the number of processors
+         */
+        data   = new double[data_size];
+        datacp = new double[vector_size];
+
+        /* fill main elements of vector
+         * rand() + rand() can give overflow int,
+         * thus we get negative numbers in the vector.
+         * it needs to be done because
+         * rand() returns non-negative numbers
+         */
+        for (i = 0; i < vector_size; i++)
+            data[i] = static_cast<double>((std::rand() %
+                      (10000 - (-10000) + 1) + (-10000)) / 100);
+
+        /* copy data to another array for sequential sorting */
+        memcpy(datacp, data, vector_size * sizeof(double));
+
+        /* fill extra elements of vector
+         * fill in the maximum number so that after sorting
+         * you know which extra elements need to be thrown out
+         */
+        if (extra_elements != 0) {
+            for (i = vector_size;
+                 i < data_size;
+                 i++)
+                data[i] = DBL_MAX;
+            chunk_size++;
+        }
+
+        if (vector_size <= 20) {
+            printf("Vector before sort: \n");
+            print_vector(data, data_size);
+        }
+
+        start_time = MPI_Wtime();
+
+        MPI_Bcast(&chunk_size, 1, MPI_INT, MASTER_PROCESS, MPI_COMM_WORLD);
+        chunk = new double[chunk_size];
+        MPI_Scatter(data, chunk_size, MPI_DOUBLE, chunk, chunk_size, MPI_DOUBLE,
+                    MASTER_PROCESS, MPI_COMM_WORLD);
+
+        RadixSortMSD<double>(chunk, chunk_size);
+    } else {
+        MPI_Bcast(&chunk_size, 1, MPI_INT, MASTER_PROCESS, MPI_COMM_WORLD);
+        chunk = new double[chunk_size];
+        MPI_Scatter(data, chunk_size, MPI_DOUBLE, chunk, chunk_size, MPI_DOUBLE,
+                    MASTER_PROCESS, MPI_COMM_WORLD);
+
+        RadixSortMSD<double>(chunk, chunk_size);
+    }
+
+    step = 1;
+
+    while (step < proc_number) {
+        if (id % (2 * step) == 0) {
+            if (id + step < proc_number) {
+                MPI_Recv(&m, 1, MPI_INT, id + step, MASTER_PROCESS,
+                         MPI_COMM_WORLD, &status);
+                other = new double[m];
+                MPI_Recv(other, m, MPI_DOUBLE, id + step, MASTER_PROCESS,
+                         MPI_COMM_WORLD, &status);
+
+                chunk = merge(chunk, chunk_size, other, m);
+
+                delete[] other;
+                chunk_size += m;
             }
-}
-
-// Сортировка подсчетом для типа double по i-му байту для положительных чисел
-void CountingSortPlus(double* arr_inp, double* arr_out,
-                      int size_arr, int byte_num) {
-unsigned char* mas = (unsigned char*)arr_inp;
-
-
-int counter[256];
-int offset;
-
-      memset (counter, 0, sizeof(int) * 256);
-               // Заполнить первые 256 байт нулями
-for(int i = 0; i < size_arr; i++)
-      counter[mas[8 * i + byte_num]]++;
-// counter показывает, сколько чисел типа double содержит определенный разряд
-// Теперь ищем номер состояния байта byte_num, который присутствует
-// в каких-либо элементах double
-     int j = 0;
-         for (int j=0; j < 256; j++)
-            if (counter[j] != 0)
-                break;
-offset = counter[j];
-// Теперь offset показывает, сколько имеется элементов с определенным байтом
-counter[j] = 0;
-j++;
-        for (int j=0; j < 256; j++) {
-           int tmp = counter[j];
-           counter[j] = offset;
-           offset += tmp;
-}
-
-for(int i = 0; i < size_arr; i++) {
-        arr_out[counter[mas[8 * i + byte_num]]] = arr_inp[i];
-counter[mas[8 * i + byte_num]]++;
-}
-}
-
-// Сортировка подсчетом для типа double по i-му байту для отрицательных чисел
-void CountingSortMinus(double* arr_inp, double* arr_out,
-                      int size_arr, int byte_num) {
-unsigned char* mas = (unsigned char*)arr_inp;
-
-int counter[256];
-int offset;
-
-        memset (counter, 0, sizeof(int) * 256);
-               for (int i = 0; i < size_arr; i++)
-                   counter[mas[8 * i + byte_num]]++;
-int j = 255;
-        for (int j=255; j >= 0; j--)
-           if (counter[j] != 0)
-              break;
-offset = counter[j];
-     counter[j] = 0;
-        j--;
-
-for (int j=255; j >= 0; j--) {
-    int tmp = counter[j];
-    counter[j] = offset;
-    offset += tmp;
-}
-
-for (int i = 0; i < size_arr; i++) {
-          arr_out[counter[mas[8 * i + byte_num]]] = arr_inp[i];
-                counter[mas[8 * i + byte_num]]++;
-}
-}
-
-void LSDSortDouble(double* arr_inp, int size_arr) {
-double* arr_inp_plus;
-double* arr_inp_minus;
-double* arr_out_plus;
-double* arr_out_minus;
-int size_arr_plus = 0,
-         size_arr_minus = 0;
-int counter_arr_plus = 0,
-       counter_arr_minus = 0;
-
-for (int i = 0; i < size_arr; i++)  // Подсчитаем число элементов
-     if (arr_inp[i] > 0)
-        size_arr_plus++;
-     else
-        size_arr_minus++;
-
-arr_inp_plus = new double[size_arr_plus];
-arr_inp_minus = new double[size_arr_minus];
-arr_out_plus = new double[size_arr_plus];
-arr_out_minus = new double[size_arr_minus];
-
-    // Раскидаем + и - элементы в соответсвующие массивы
-for (int i = 0; i < size_arr; i++)
-             if (arr_inp[i] > 0)
-                   arr_inp_plus[counter_arr_plus++] = arr_inp[i];
-             else
-                  arr_inp_minus[counter_arr_minus++] = arr_inp[i];
-// Сортируем положительный массив
-if (size_arr_plus > 0) {
-        CountingSortPlus(arr_inp_plus, arr_out_plus, size_arr_plus, 0);
-        CountingSortPlus(arr_out_plus, arr_inp_plus, size_arr_plus, 1);
-        CountingSortPlus(arr_inp_plus, arr_out_plus, size_arr_plus, 2);
-        CountingSortPlus(arr_out_plus, arr_inp_plus, size_arr_plus, 3);
-        CountingSortPlus(arr_inp_plus, arr_out_plus, size_arr_plus, 4);
-        CountingSortPlus(arr_out_plus, arr_inp_plus, size_arr_plus, 5);
-        CountingSortPlus(arr_inp_plus, arr_out_plus, size_arr_plus, 6);
-        CountingSortPlus(arr_out_plus, arr_inp_plus, size_arr_plus, 7);
-}
-// Сортирует отрицательный массив
-if (size_arr_minus > 0) {
-      CountingSortMinus(arr_inp_minus, arr_out_minus, size_arr_minus, 0);
-      CountingSortMinus(arr_out_minus, arr_inp_minus, size_arr_minus, 1);
-      CountingSortMinus(arr_inp_minus, arr_out_minus, size_arr_minus, 2);
-      CountingSortMinus(arr_out_minus, arr_inp_minus, size_arr_minus, 3);
-      CountingSortMinus(arr_inp_minus, arr_out_minus, size_arr_minus, 4);
-      CountingSortMinus(arr_out_minus, arr_inp_minus, size_arr_minus, 5);
-      CountingSortMinus(arr_inp_minus, arr_out_minus, size_arr_minus, 6);
-      CountingSortMinus(arr_out_minus, arr_inp_minus, size_arr_minus, 7);
-}
-
-// Сливаем
-    for (int i = 0; i < size_arr_minus; i++)
-           arr_inp[i] = arr_inp_minus[i];
-
-       for (int i = 0; i < size_arr_plus; i++)
-             arr_inp[i + size_arr_minus] = arr_inp_plus[i];
-
-if (arr_inp_plus != nullptr) delete[]arr_inp_plus;
-if (arr_out_plus != nullptr) delete[]arr_out_plus;
-if (arr_inp_minus != nullptr) delete[]arr_inp_minus;
-if (arr_out_minus != nullptr) delete[]arr_out_minus;
-
-}
-
-void Compare_split_right(double* buffer_curr_proc, int size_curr_proc_buffer,
-              int id_proc_right, int size_buffer_proc_right) {
-double* buffer_proc_recv = new double[size_buffer_proc_right];
-double* merge_arr = new double[size_curr_proc_buffer + size_buffer_proc_right];
-MPI_Status status;
-
-/* INTERCHANGE */
-
-MPI_Sendrecv(buffer_curr_proc, size_curr_proc_buffer, MPI_DOUBLE,
-   id_proc_right, 1, buffer_proc_recv, size_buffer_proc_right,
-         MPI_DOUBLE, id_proc_right, 1, MPI_COMM_WORLD, &status);
-
-// При условии, что буферы упорядочены, используем операцию слияния буферов
-
-int index_buffer_curr_proc = 0,
-         index_buffer_right_proc = 0,
-               index_buffer_merge = 0;
-
-// Идет слияние, причем merge_arr на этом этапе всегда упорядочен
-while (index_buffer_curr_proc < size_curr_proc_buffer &&
-                          index_buffer_right_proc < size_buffer_proc_right)
-       if (buffer_curr_proc[index_buffer_curr_proc] <
-                                    buffer_proc_recv[index_buffer_right_proc])
-merge_arr[index_buffer_merge++] = buffer_curr_proc[index_buffer_curr_proc++];
-       else
-merge_arr[index_buffer_merge++] = buffer_proc_recv[index_buffer_right_proc++];
-
-while (index_buffer_right_proc < size_buffer_proc_right)
-  merge_arr[index_buffer_merge++] = buffer_proc_recv[index_buffer_right_proc++];
-          while (index_buffer_curr_proc < size_curr_proc_buffer)
-  merge_arr[index_buffer_merge++] = buffer_curr_proc[index_buffer_curr_proc++];
-
-           for (int i = 0; i < size_curr_proc_buffer; i++)
-                   buffer_curr_proc[i] = merge_arr[i];
-       if (buffer_proc_recv != nullptr) delete[]buffer_proc_recv;
-                   if (merge_arr != nullptr) delete[]merge_arr;
-}
-
-void Compare_split_left(double* buffer_curr_proc,
-      int size_curr_proc_buffer, int id_proc_left, int size_buffer_proc_left) {
-double* buffer_proc_recv = new double[size_buffer_proc_left];
-double* merge_arr = new double[size_curr_proc_buffer + size_buffer_proc_left];
-MPI_Status status;
-
-MPI_Sendrecv(buffer_curr_proc, size_curr_proc_buffer, MPI_DOUBLE,
-  id_proc_left, 1, buffer_proc_recv, size_buffer_proc_left,
-   MPI_DOUBLE, id_proc_left, 1, MPI_COMM_WORLD, &status);
-
-    /* MERGE */
-
-    // При условии, что буферы упорядочены, используем операцию слияния буферов
-
-int index_buffer_curr_proc = 0,
-         index_buffer_left_proc = 0,
-            index_buffer_merge = 0;
-
-// Идет слияние, причем merge_arr на этом этапе всегда упорядочен
-while (index_buffer_curr_proc < size_curr_proc_buffer &&
-                index_buffer_left_proc < size_buffer_proc_left)
-  if (buffer_curr_proc[index_buffer_curr_proc] <
-                                    buffer_proc_recv[index_buffer_left_proc])
-  merge_arr[index_buffer_merge++] = buffer_curr_proc[index_buffer_curr_proc++];
-  else
-      merge_arr[index_buffer_merge++] =
-                       buffer_proc_recv[index_buffer_left_proc++];
-
-while (index_buffer_left_proc < size_buffer_proc_left)
-      merge_arr[index_buffer_merge++] =
-                             buffer_proc_recv[index_buffer_left_proc++];
-while (index_buffer_curr_proc < size_curr_proc_buffer)
-      merge_arr[index_buffer_merge++] =
-                             buffer_curr_proc[index_buffer_curr_proc++];
-
-      for (int i = 0; i < size_curr_proc_buffer; i++)
-              buffer_curr_proc[i] = merge_arr[size_buffer_proc_left + i];
-
-if (buffer_proc_recv != nullptr) delete[]buffer_proc_recv;
-if (merge_arr != nullptr) delete[]merge_arr;
-}
-
-// Сортировка параллельная
-void Sort_pp(double* recv_buffer, int* send_num_work) {
-     for (int i = 0; i < num_of_procs; i++)
-          if (i % 2 == 1) {  // Если выполняется, то это нечетная операция
-               if (curr_rank_proc % 2 == 1) {
-                     if (curr_rank_proc < num_of_procs - 1) {
-                     // Сравнение - обмен с соседом справа
-               Compare_split_right(recv_buffer, send_num_work[curr_rank_proc],
-                      curr_rank_proc + 1, send_num_work[curr_rank_proc + 1]); }
-                        } else {
-          if (curr_rank_proc > 0) {  // Тогда сравнение - обмен с соседом слева
-               Compare_split_left(recv_buffer, send_num_work[curr_rank_proc],
-                        curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);
-                     }
-                    }
-                  } else {
-                    if (curr_rank_proc % 2 == 0) {
-                    if (curr_rank_proc < num_of_procs - 1)
-                    // Сравнение - обмен с соседом справа
-              Compare_split_right(recv_buffer, send_num_work[curr_rank_proc],
-                       curr_rank_proc + 1, send_num_work[curr_rank_proc + 1]);
-                    } else {  // Тогда сравнение - обмен с соседом слева
-              Compare_split_left(recv_buffer, send_num_work[curr_rank_proc],
-                  curr_rank_proc - 1, send_num_work[curr_rank_proc - 1]);} } }
-
-int main(int argc, char* argv[]) {
-    double* test_arr_seq_radix = nullptr;
-    double* test_arr_pp_radix = nullptr;
-
-     int* displs = nullptr;
-      // Массив смещений относительно начала буфера test_arr
-     int* send_num_work = nullptr;
-      // Массив количества работ для каждого процесса
-     double* recv_buffer = nullptr;
-
-    int size_arr = atoi(argv[1]);
-
-    if (size_arr <= 0) {
-        std::cout << "Error";
-        return -1;
-      }
-
-    double seq_alg_time_start_radix = 0;
-    double seq_alg_time_end_radix = 0;
-    double pp_alg_time_start_radix = 0;
-    double pp_alg_time_end_radix = 0;
-
-MPI_Init(&argc, &argv);
-
-MPI_Comm_size(MPI_COMM_WORLD, &num_of_procs);
-MPI_Comm_rank(MPI_COMM_WORLD, &curr_rank_proc);
-
-if (curr_rank_proc == ROOT) {
-       test_arr_seq_radix = Create_and_init_arr(size_arr);
-       test_arr_pp_radix = new double[size_arr];
-
-if (test_arr_seq_radix == NULL) {
-            std::cout << "Incorrect input data, try again";
-            return 0;
-  }
-
-  for (int i = 0; i < size_arr; i++)
-       test_arr_pp_radix[i] = test_arr_seq_radix[i];
-
-if (size_arr < MAX_SHOW_SIZE)
-    Show_arr(test_arr_seq_radix, size_arr);
-
-// Начало работы последовательной версии
-    seq_alg_time_start_radix = MPI_Wtime();
-    LSDSortDouble(test_arr_seq_radix, size_arr);
-    seq_alg_time_end_radix = MPI_Wtime();
-    time_seq_work_alg_radix = seq_alg_time_end_radix - seq_alg_time_start_radix;
-
-       if (size_arr < MAX_SHOW_SIZE) {
-         std::cout << "Array sorted by sequence radix :" << std::endl;
-         Show_arr(test_arr_seq_radix, size_arr);
-}
-}
-
-    // Параллельная версия работы алгоритма
-test_arr_pp_radix = new double[size_arr];
-MPI_Barrier(MPI_COMM_WORLD);
-      pp_alg_time_start_radix = MPI_Wtime();
-
-     send_num_work = new int[num_of_procs];
-     displs = new int[num_of_procs];
-
-    /* Параллельная сортировка с использованием
-                 быстрой сортировки локальных буферов */
-
-// MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
-
-Calculate_work_and_displs(displs, send_num_work, size_arr);
-
-       recv_buffer = new double[send_num_work[curr_rank_proc]];
-
-MPI_Scatterv(test_arr_pp_radix, send_num_work, displs,
-           MPI_DOUBLE, recv_buffer, send_num_work[curr_rank_proc],
-                MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-
-LSDSortDouble(recv_buffer, send_num_work[curr_rank_proc]);
-
-Sort_pp(recv_buffer, send_num_work);
-
-MPI_Gatherv(recv_buffer, send_num_work[curr_rank_proc], MPI_DOUBLE,
-    test_arr_pp_radix, send_num_work, displs, MPI_DOUBLE, ROOT, MPI_COMM_WORLD);
-
-
-if (curr_rank_proc == ROOT) {
-    pp_alg_time_end_radix = MPI_Wtime();
-
-    time_pp_work_alg_radix = pp_alg_time_end_radix - pp_alg_time_start_radix;
-}
-
-if (curr_rank_proc == ROOT) {
-     if (size_arr < MAX_SHOW_SIZE) {
-      std::cout << "Array sorted by parallel radix :" << std::endl;
-      Show_arr(test_arr_pp_radix, size_arr);
-      std::cout << std::endl;
-}
-
-std::cout << "Sequence is worked: " << time_seq_work_alg_radix << std::endl;
-std::cout << "Parallel is worked: " << time_pp_work_alg_radix  << std::endl;
-
-        std::cout << std::endl;
-
-std::cout << "effect= " <<
-                 (time_seq_work_alg_radix/time_pp_work_alg_radix) << std::endl;
-        // Сравнение полученных результатов:
-}
-
-// MPI_Barrier(MPI_COMM_WORLD);
-if (test_arr_pp_radix != nullptr) delete[]test_arr_pp_radix;
-if (test_arr_seq_radix != nullptr) delete[]test_arr_seq_radix;
-if (recv_buffer != nullptr) delete[]recv_buffer;
-if (send_num_work != nullptr) delete[]send_num_work;
-if (displs != nullptr) delete[]displs;
-
-MPI_Finalize();
-
-return 0;
+        } else {
+            int near = id - step;
+            MPI_Send(&chunk_size, 1, MPI_INT, near, MASTER_PROCESS,
+                     MPI_COMM_WORLD);
+            MPI_Send(chunk, chunk_size, MPI_DOUBLE, near, MASTER_PROCESS,
+                     MPI_COMM_WORLD);
+            break;
+        }
+        step *= 2;
+    }
+
+    if (id == MASTER_PROCESS) {
+        stop_time = MPI_Wtime();
+        par_time = (stop_time - start_time);
+        printf("\nParallel is:\n");
+        printf("\nSort completed!\n\tVector size: %d\n\tNumber of processors:"
+               " %d\n\tTime: %f secs\n\n", vector_size, proc_number,
+               par_time);
+
+        if (vector_size <= 20) {
+            printf("Vector after sort: \n");
+            print_vector(chunk, vector_size);
+        }
+
+        start_time = MPI_Wtime();
+        RadixSortMSD<double>(datacp, vector_size);
+        stop_time = MPI_Wtime();
+        seq_time = (stop_time - start_time);
+
+        printf("\nSequential is :\n");
+        printf("\nSort completed!\n\tVector size: %d\n\t"
+               "Time: %f secs\n\n", vector_size,
+               seq_time);
+
+        if (vector_size <= 20) {
+            printf("Vector after sort: \n");
+            print_vector(datacp, vector_size);
+        }
+
+        printf("\nVectors after sort are %s\n",
+               (!memcmp(chunk, datacp, vector_size)) ? "equal" : "not equal");
+        printf("Effect was: %f\n", (seq_time / par_time));
+
+        delete[] data;
+        delete[] datacp;
+    }
+
+    delete[] chunk;
+
+    MPI_Finalize();
+
+    return 0;
 }
