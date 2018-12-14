@@ -34,9 +34,7 @@ return arr;
 
 // Отобразить массив
 void Show_arr(double* arr, int size_arr) {
-if (arr == NULL || size_arr < 1) {
-  return ;
-}
+if (arr == NULL || size_arr < 1) {}
                std::cout.precision(9);
 for (int i = 0; i < size_arr; i++)
         std::cout << arr[i] << " ";
@@ -82,14 +80,14 @@ for(int i = 0; i < size_arr; i++)
 // Теперь ищем номер состояния байта byte_num, который присутствует
 // в каких-либо элементах double
      int j = 0;
-         for (j; j < 256; j++)
+         for (int j=0; j < 256; j++)
             if (counter[j] != 0)
                 break;
 offset = counter[j];
 // Теперь offset показывает, сколько имеется элементов с определенным байтом
 counter[j] = 0;
 j++;
-        for (j; j < 256; j++) {
+        for (int j=0; j < 256; j++) {
            int tmp = counter[j];
            counter[j] = offset;
            offset += tmp;
@@ -113,20 +111,20 @@ int offset;
                for (int i = 0; i < size_arr; i++)
                    counter[mas[8 * i + byte_num]]++;
 int j = 255;
-        for (j; j >= 0; j--)
+        for (int j=255; j >= 0; j--)
            if (counter[j] != 0)
               break;
 offset = counter[j];
      counter[j] = 0;
         j--;
 
-for(j; j >= 0; j--) {
+for (int j=255; j >= 0; j--) {
     int tmp = counter[j];
     counter[j] = offset;
     offset += tmp;
 }
 
-for(int i = 0; i < size_arr; i++) {
+for (int i = 0; i < size_arr; i++) {
           arr_out[counter[mas[8 * i + byte_num]]] = arr_inp[i];
                 counter[mas[8 * i + byte_num]]++;
 }
