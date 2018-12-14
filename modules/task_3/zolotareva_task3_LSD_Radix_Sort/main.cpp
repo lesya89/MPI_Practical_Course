@@ -400,10 +400,7 @@ if (test_arr_pp_radix[i] != test_arr_seq_radix[i]) {
             }
             if (good)
 std::cout  << std::endl;
-
 }
-delete[] test_arr_seq_radix;
-delete[] test_arr_pp_radix;
 
 MPI_Finalize();
 
