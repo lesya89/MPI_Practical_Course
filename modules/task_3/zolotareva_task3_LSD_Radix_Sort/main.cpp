@@ -347,7 +347,7 @@ if (curr_rank_proc == ROOT) {
 
 MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
 
-    if (curr_rank_proc > 0) {
+    if (curr_rank_proc != ROOT) {
       test_arr_pp_radix = new double[size_arr];
 
 Calculate_work_and_displs(displs, send_num_work, size_arr);
