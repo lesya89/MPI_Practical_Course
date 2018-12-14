@@ -183,6 +183,12 @@ if (size_arr_minus > 0) {
 
        for (int i = 0; i < size_arr_plus; i++)
              arr_inp[i + size_arr_minus] = arr_inp_plus[i];
+
+if (arr_inp_plus != nullptr) delete[]arr_inp_plus;
+if (arr_out_plus != nullptr) delete[]arr_out_plus;
+if (arr_inp_minus != nullptr) delete[]arr_inp_minus;
+if (arr_out_minus != nullptr) delete[]arr_out_minus;
+
 }
 
 void Compare_split_right(double* buffer_curr_proc, int size_curr_proc_buffer,
@@ -219,6 +225,8 @@ while (index_buffer_right_proc < size_buffer_proc_right)
 
            for (int i = 0; i < size_curr_proc_buffer; i++)
                    buffer_curr_proc[i] = merge_arr[i];
+       if (buffer_proc_recv != nullptr) delete[]buffer_proc_recv;
+                   if (merge_arr != nullptr) delete[]merge_arr;
 }
 
 void Compare_split_left(double* buffer_curr_proc,
@@ -258,6 +266,9 @@ while (index_buffer_curr_proc < size_curr_proc_buffer)
 
       for (int i = 0; i < size_curr_proc_buffer; i++)
               buffer_curr_proc[i] = merge_arr[size_buffer_proc_left + i];
+
+if (buffer_proc_recv != nullptr) delete[]buffer_proc_recv;
+if (merge_arr != nullptr) delete[]merge_arr;
 }
 
 // Сортировка параллельная
@@ -350,7 +361,7 @@ MPI_Barrier(MPI_COMM_WORLD);
     /* Параллельная сортировка с использованием
                  быстрой сортировки локальных буферов */
 
-//MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
+// MPI_Bcast(&size_arr, 1, MPI_INT, ROOT, MPI_COMM_WORLD);
 
 Calculate_work_and_displs(displs, send_num_work, size_arr);
 
